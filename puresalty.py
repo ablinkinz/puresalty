@@ -7,7 +7,7 @@ PureStorage Module
 
 The puresalty module allows you to interact with your PureStorage array(s).
 
-:codeauthor: Stephan Looney <slooney@stephanlooney.com>
+:codeauthor: Stephan Looney <ablinkin@me.com>
 
 
 Dependencies
@@ -55,7 +55,9 @@ import salt.config as config
 #import purestorage libs
 import purestorage
 
+
 __virtualname__ = 'puresalty'
+
 
 def get_creds():
     if not user:
@@ -68,9 +70,116 @@ def get_creds():
         token = __salt__['config.option']('puresalty.token')
     return {"user": user, "password": password, "host": host, "token": token}
 
+
 def test_connection():
     from purestorage import FlashArray
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     array_info = array.get()
     return "FlashArray {} (version {}) REST session established!".format(array_info['array_name'], array_info['version'])
+
+
+def create_volume(name, size):
+    #size can be an integer or string. String for a 1TB volume would be "1T"
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    vol_created = array.create_volume(name,size)
+    return vol_created
+
+
+def extend_volume(name,size):
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    extend_array = array.extend_volume(name,size)
+    return extend_array
+
+
+def destroy_volume(name):
+    #WARNING: this will destroy and eradicate the volume
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    array.destroy_volume(name)
+    array.eradicate_volume(name)
+    return {"Volume Deleted and Eradicated": {"Name": name}}
+
+
+def show_host_connections(name):
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    host_connections = array.list_host_connections(name)
+    return host_connections
+
+
+def list_volume_snapshots():
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    volume_snaps = array.list_volumes(snap=True)
+    return volume_snaps
+
+
+def create_volume_snapshots(name):
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    volume_snap = array.create_snapshot(name)
+    return volume_snap
+
+
+def create_alert_recipient(email):
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    create_alert = array.create_alert_recipient(email)
+    return create_alert
+
+
+def show_alert_recipients():
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    recipients = array.list_alert_recipients()
+    return recipients
+
+
+def test_alerts():
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    alerts = array.test_alert()
+    return alerts
+
+
+def get_alerts():
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    alerts = array.list_messages()
+    return alerts
+
+def show_all_volumes():
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    volumes = array.list_volumes()
+    return volumes
+
+
+def recover_volume(name):
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    recovery = array.recover_volume(name)
+    return recovery
+
+
+def get_hosts():
+    from purestorage import FlashArray, purestorage
+    creds = get_creds()
+    array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
+    hosts = array.list_hosts()
+    return hosts
