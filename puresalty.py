@@ -46,11 +46,7 @@ master configuration at
 # Import python libs
 from __future__ import absolute_import
 import logging
-import json
 # Import salt libs
-import importlib
-from salt.exceptions import SaltCloudSystemExit
-# Import salt cloud libs
 import salt.config as config
 #import purestorage libs
 import purestorage
@@ -60,45 +56,51 @@ __virtualname__ = 'puresalty'
 
 
 def get_creds():
-    if not user:
-        user = __salt__['config.option']('puresalty.user')
-    if not password:
-        password = __salt__['config.option']('puresalty.password')
-    if not host:
-        host = __salt__['config.option']('puresalty.host')
-    if not token:
-        token = __salt__['config.option']('puresalty.token')
+    '''
+    getting the configs for pure from the salt master config
+    '''
+    logging.debug("getting pure credentials from saltmaster config")
+    user = __salt__['config.option']('puresalty.user')
+    password = __salt__['config.option']('puresalty.password')
+    host = __salt__['config.option']('puresalty.host')
+    token = __salt__['config.option']('puresalty.token')
     return {"user": user, "password": password, "host": host, "token": token}
 
 
 def test_connection():
-    from purestorage import FlashArray
+    '''
+    connect to the pure array
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     array_info = array.get()
-    return "FlashArray {} (version {}) REST session established!".format(array_info['array_name'], array_info['version'])
+    return "FlashArray {} (version {})".format(array_info['array_name'], array_info['version'])
 
 
 def create_volume(name, size):
-    #size can be an integer or string. String for a 1TB volume would be "1T"
-    from purestorage import FlashArray, purestorage
+    '''
+    size can be an integer or string. String for a 1TB volume would be "1T"
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
-    vol_created = array.create_volume(name,size)
+    vol_created = array.create_volume(name, size)
     return vol_created
 
 
-def extend_volume(name,size):
-    from purestorage import FlashArray, purestorage
+def extend_volume(name, size):
+    '''
+    #from purestorage import FlashArray, purestorage
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
-    extend_array = array.extend_volume(name,size)
+    extend_array = array.extend_volume(name, size)
     return extend_array
 
 
 def destroy_volume(name):
+    '''
     #WARNING: this will destroy and eradicate the volume
-    from purestorage import FlashArray, purestorage
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     array.destroy_volume(name)
@@ -107,7 +109,9 @@ def destroy_volume(name):
 
 
 def show_host_connections(name):
-    from purestorage import FlashArray, purestorage
+    '''
+    show connections to host
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     host_connections = array.list_host_connections(name)
@@ -115,7 +119,9 @@ def show_host_connections(name):
 
 
 def list_volume_snapshots():
-    from purestorage import FlashArray, purestorage
+    '''
+    list snapshots for a volume
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     volume_snaps = array.list_volumes(snap=True)
@@ -123,7 +129,9 @@ def list_volume_snapshots():
 
 
 def create_volume_snapshots(name):
-    from purestorage import FlashArray, purestorage
+    '''
+    create a named shapshot
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     volume_snap = array.create_snapshot(name)
@@ -131,7 +139,9 @@ def create_volume_snapshots(name):
 
 
 def create_alert_recipient(email):
-    from purestorage import FlashArray, purestorage
+    '''
+    create alert email
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     create_alert = array.create_alert_recipient(email)
@@ -139,7 +149,9 @@ def create_alert_recipient(email):
 
 
 def show_alert_recipients():
-    from purestorage import FlashArray, purestorage
+    '''
+    show alert emails
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     recipients = array.list_alert_recipients()
@@ -147,7 +159,9 @@ def show_alert_recipients():
 
 
 def test_alerts():
-    from purestorage import FlashArray, purestorage
+    '''
+    test alerts
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     alerts = array.test_alert()
@@ -155,14 +169,18 @@ def test_alerts():
 
 
 def get_alerts():
-    from purestorage import FlashArray, purestorage
+    '''
+    get active alerts
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     alerts = array.list_messages()
     return alerts
 
 def show_all_volumes():
-    from purestorage import FlashArray, purestorage
+    '''
+    list volumes
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     volumes = array.list_volumes()
@@ -170,7 +188,9 @@ def show_all_volumes():
 
 
 def recover_volume(name):
-    from purestorage import FlashArray, purestorage
+    '''
+    try to recover a volume
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     recovery = array.recover_volume(name)
@@ -178,7 +198,9 @@ def recover_volume(name):
 
 
 def get_hosts():
-    from purestorage import FlashArray, purestorage
+    '''
+    list hosts
+    '''
     creds = get_creds()
     array = purestorage.FlashArray(creds["host"], creds["user"], creds["password"])
     hosts = array.list_hosts()
